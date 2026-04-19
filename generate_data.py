@@ -1,52 +1,27 @@
-"""
-Market Basket Analysis - FastAPI Backend  (FIXED VERSION)
-=========================================================
-✅ Works when run from MARKET_ANALYSIS/ folder directly
-✅ Finds ml_engine.py in same folder
-✅ Finds data/transactions.csv relative to this file
-✅ Auto-generates dataset if transactions.csv is missing
-
-HOW TO RUN:
-    cd C:\\Users\\kashi\\OneDrive\\Desktop\\MARKET_ANALYSIS
-    python app.py
-"""
-
 import os
 import sys
 import time
 import shutil
 import traceback
 
-# ─────────────────────────────────────────────────────────────
-# FIX 1: Make Python find ml_engine.py no matter where you run from
-# ─────────────────────────────────────────────────────────────
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))  # folder of app.py itself
-sys.path.insert(0, THIS_DIR)                            # so "import ml_engine" always works
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))  
+sys.path.insert(0, THIS_DIR)                           
 
-# ─────────────────────────────────────────────────────────────
-# FIX 2: Resolve data/ folder relative to THIS file, not cwd
-# ─────────────────────────────────────────────────────────────
-# Supports two layouts:
-#   FLAT:   MARKET_ANALYSIS/ → app.py, ml_engine.py, data/transactions.csv
-#   NESTED: MARKET_ANALYSIS/ → backend/app.py, backend/ml_engine.py, data/transactions.csv
 
-_data_beside = os.path.join(THIS_DIR, "data")           # flat:   same folder/data/
-_data_parent = os.path.join(THIS_DIR, "..", "data")     # nested: one level up/data/
+_data_beside = os.path.join(THIS_DIR, "data")          
+_data_parent = os.path.join(THIS_DIR, "..", "data")  
 
 if os.path.isdir(_data_beside):
     DATA_DIR = _data_beside
 elif os.path.isdir(os.path.abspath(_data_parent)):
     DATA_DIR = os.path.abspath(_data_parent)
 else:
-    # Neither exists yet — create data/ beside this file
+   
     DATA_DIR = _data_beside
     os.makedirs(DATA_DIR, exist_ok=True)
 
 DEFAULT_DATASET = os.path.join(DATA_DIR, "transactions.csv")
 
-# ─────────────────────────────────────────────────────────────
-# FIX 3: Auto-generate dataset if missing
-# ─────────────────────────────────────────────────────────────
 if not os.path.exists(DEFAULT_DATASET):
     print("⚠️  transactions.csv not found. Generating sample dataset now...")
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -108,9 +83,6 @@ if not os.path.exists(DEFAULT_DATASET):
     pd.DataFrame(records).to_csv(DEFAULT_DATASET, index=False)
     print(f"✅ Dataset generated → {DEFAULT_DATASET}")
 
-# ─────────────────────────────────────────────────────────────
-# Now safe to import ml_engine
-# ─────────────────────────────────────────────────────────────
 from ml_engine import (
     load_transactions, run_full_analysis, RecommendationEngine,
     rank_rules, build_product_graph, segment_customers,
@@ -138,10 +110,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Resolve frontend folder (try multiple layouts) ───────────
+
 _fe_candidates = [
-    os.path.join(THIS_DIR, "frontend"),           # flat:   MARKET_ANALYSIS/frontend/
-    os.path.join(THIS_DIR, "..", "frontend"),      # nested: MARKET_ANALYSIS/backend/../frontend/
+    os.path.join(THIS_DIR, "frontend"),           
+    os.path.join(THIS_DIR, "..", "frontend"),   
     os.path.join(THIS_DIR, "..", "..", "frontend"),
 ]
 FRONTEND_DIR = next(
@@ -150,23 +122,21 @@ FRONTEND_DIR = next(
 )
 FRONTEND_HTML = os.path.join(FRONTEND_DIR, "index.html") if FRONTEND_DIR else None
 
-# Mount /static → frontend folder so CSS/JS assets load too
 if FRONTEND_DIR and os.path.isdir(FRONTEND_DIR):
     app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
     print(f"🎨 Frontend found: {FRONTEND_DIR}")
 
-# ── In-memory cache ──────────────────────────────────────────
+
 _cache: Dict = {
     "analysis_results": None,
     "rec_engine":       None,
     "last_trained":     None,
-    "training_status":  "idle",   # idle | training | ready | error
+    "training_status":  "idle",  
     "training_progress": 0,
     "dataset_path":     DEFAULT_DATASET,
 }
 
 
-# ── Pydantic request models ──────────────────────────────────
 class TrainRequest(BaseModel):
     min_support:    float = 0.01
     min_confidence: float = 0.20
@@ -181,7 +151,7 @@ class ProductRequest(BaseModel):
     n_recommendations: int = 5
 
 
-# ── Helper ───────────────────────────────────────────────────
+
 def _ensure_trained():
     if _cache["analysis_results"] is None:
         raise HTTPException(
@@ -189,18 +159,15 @@ def _ensure_trained():
             detail="Model not trained yet. POST /api/train first."
         )
 
-
-# ── Endpoints ────────────────────────────────────────────────
-
 @app.get("/", response_class=HTMLResponse)
 def root():
     """Serve the React frontend UI at localhost:8000"""
-    # Option A: serve index.html from the frontend/ folder
+   
     if FRONTEND_HTML and os.path.exists(FRONTEND_HTML):
         with open(FRONTEND_HTML, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
 
-    # Option B: inline fallback UI (no external files needed)
+   
     return HTMLResponse(content="""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -999,7 +966,6 @@ def get_all_products():
     return {"products": list(_cache["analysis_results"]["summary"]["top_products"].keys())}
 
 
-# ── Auto-train on startup ────────────────────────────────────
 @app.on_event("startup")
 def startup_event():
     if os.path.exists(DEFAULT_DATASET):
@@ -1029,8 +995,6 @@ def startup_event():
     else:
         print(f"⚠️  Dataset not found at {DEFAULT_DATASET}. POST /api/train to begin.")
 
-
-# ── Entry point ──────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
     print(f"\n📂 App directory : {THIS_DIR}")

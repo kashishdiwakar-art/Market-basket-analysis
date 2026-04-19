@@ -1,5 +1,20 @@
+"""
+Market Basket Analysis — FastAPI Backend + Self-Contained UI
+============================================================
+✅ Pure vanilla HTML/CSS/JS frontend — zero CDN, zero black screen
+✅ Open http://localhost:8000  →  full dashboard appears instantly
+✅ Auto-finds ml_engine.py from any working directory
+✅ Auto-generates transactions.csv if missing
+
+HOW TO RUN:
+    cd MARKET_ANALYSIS
+    python app.py
+    → open http://localhost:8000
+"""
+
 import os, sys, time, shutil, traceback
 
+# ── Path setup ────────────────────────────────────────────────
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, THIS_DIR)
 
@@ -15,6 +30,7 @@ else:
 
 DEFAULT_DATASET = os.path.join(DATA_DIR, "transactions.csv")
 
+# ── Auto-generate dataset if missing ─────────────────────────
 if not os.path.exists(DEFAULT_DATASET):
     print("Generating sample dataset...")
     import pandas as pd, numpy as np, random
@@ -58,6 +74,7 @@ if not os.path.exists(DEFAULT_DATASET):
     pd.DataFrame(records).to_csv(DEFAULT_DATASET,index=False)
     print(f"Dataset saved to {DEFAULT_DATASET}")
 
+# ── ML Engine import ──────────────────────────────────────────
 from ml_engine import (
     load_transactions, run_full_analysis, RecommendationEngine,
     rank_rules, build_product_graph, segment_customers,
@@ -97,6 +114,10 @@ def _ensure_trained():
     if _cache["analysis_results"] is None:
         raise HTTPException(status_code=400, detail="Model not trained yet.")
 
+# ══════════════════════════════════════════════════════════════
+#  SELF-CONTAINED UI  —  pure HTML + CSS + vanilla JS
+#  No React, No Babel, No CDN — renders instantly in any browser
+# ══════════════════════════════════════════════════════════════
 UI_HTML = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -698,6 +719,9 @@ function drawGraph(data){
 </body>
 </html>"""
 
+# ══════════════════════════════════════════════════════════════
+# API ROUTES
+# ══════════════════════════════════════════════════════════════
 
 @app.get("/", response_class=HTMLResponse)
 def root():

@@ -1,8 +1,3 @@
-"""
-Market Basket Analysis - Core ML Engine
-Implements Apriori, FP-Growth, and ECLAT algorithms from scratch
-+ Recommendation Engine + Customer Segmentation
-"""
 import pandas as pd
 import numpy as np
 from itertools import combinations
@@ -11,14 +6,11 @@ import time
 import json
 from typing import List, Dict, Tuple, Optional
 
-# ──────────────────────────────────────────────
-# DATA LOADING & PREPROCESSING
-# ──────────────────────────────────────────────
 
 def load_transactions(filepath: str) -> Tuple[pd.DataFrame, List[List[str]], List[str]]:
     """Load CSV and return raw df, basket list, and unique items."""
     df = pd.read_csv(filepath)
-    # Group by transaction → list of products
+   
     baskets = df.groupby("transaction_id")["product"].apply(list).reset_index()
     basket_list = baskets["product"].tolist()
     all_items = sorted(df["product"].unique().tolist())
@@ -35,9 +27,6 @@ def encode_baskets(basket_list: List[List[str]], all_items: List[str]) -> pd.Dat
     return pd.DataFrame(rows, columns=all_items)
 
 
-# ──────────────────────────────────────────────
-# APRIORI ALGORITHM (pure Python)
-# ──────────────────────────────────────────────
 
 class Apriori:
     """Classic Apriori association rule mining algorithm."""
@@ -58,7 +47,7 @@ class Apriori:
         transactions = [frozenset(b) for b in basket_list]
         n = len(transactions)
 
-        # L1: single items
+        
         item_counts = defaultdict(int)
         for t in transactions:
             for item in t:
@@ -73,7 +62,7 @@ class Apriori:
         Lk = list(L.keys())
 
         while Lk and k <= self.max_len:
-            # Generate candidate k-itemsets
+           
             candidates = {}
             for i in range(len(Lk)):
                 for j in range(i + 1, len(Lk)):
@@ -87,7 +76,6 @@ class Apriori:
             Lk = list(candidates.keys())
             k += 1
 
-        # Generate rules
         self.rules = self._generate_rules(transactions)
         self.training_time = time.time() - start
         return self
@@ -124,11 +112,6 @@ class Apriori:
 
         return sorted(rules, key=lambda x: x["lift"], reverse=True)
 
-
-# ──────────────────────────────────────────────
-# FP-GROWTH ALGORITHM
-# ──────────────────────────────────────────────
-
 class FPNode:
     """Node in an FP-Tree."""
     def __init__(self, item, count=0, parent=None):
@@ -136,7 +119,7 @@ class FPNode:
         self.count = count
         self.parent = parent
         self.children = {}
-        self.link = None  # link to next node with same item
+        self.link = None  
 
 class FPGrowth:
     """FP-Growth algorithm - more efficient than Apriori."""
@@ -149,19 +132,19 @@ class FPGrowth:
         self.rules = []
 
     def _build_tree(self, transactions, min_count):
-        # Count item frequencies
+        
         freq = defaultdict(int)
         for t in transactions:
             for item in t:
                 freq[item] += 1
         freq = {k: v for k, v in freq.items() if v >= min_count}
 
-        # Build FP-Tree
+      
         root = FPNode(None)
         header = {item: None for item in freq}
 
         for t in transactions:
-            # Sort items by frequency descending
+            
             items = [i for i in t if i in freq]
             items.sort(key=lambda x: freq[x], reverse=True)
             self._insert_tree(items, root, header)
@@ -177,7 +160,7 @@ class FPGrowth:
         else:
             child = FPNode(item, 1, node)
             node.children[item] = child
-            # Update header links
+           
             if header[item] is None:
                 header[item] = child
             else:
@@ -208,7 +191,7 @@ class FPGrowth:
             sup = cnt / n_total
             if sup >= self.min_support and len(new_prefix) <= self.max_len:
                 self.frequent_itemsets[frozenset(new_prefix)] = round(sup, 4)
-                # Recurse with conditional pattern base
+               
                 cond_patterns = self._conditional_patterns(item, header)
                 new_transactions = []
                 for path, count in cond_patterns:
@@ -258,11 +241,6 @@ class FPGrowth:
 
         return sorted(rules, key=lambda x: x["lift"], reverse=True)
 
-
-# ──────────────────────────────────────────────
-# ECLAT ALGORITHM (Equivalence Class Transformation)
-# ──────────────────────────────────────────────
-
 class ECLAT:
     """ECLAT uses vertical data format (tidlists) for efficient mining."""
 
@@ -293,7 +271,7 @@ class ECLAT:
                 self.frequent_itemsets[frozenset(new_prefix)] = round(support, 4)
 
                 if len(new_prefix) < self.max_len:
-                    # Combine with remaining items
+                  
                     new_items = {}
                     for item_j in items[i+1:]:
                         intersection = tidlist_i & items_tidlists[item_j]
@@ -308,7 +286,6 @@ class ECLAT:
         n = len(basket_list)
         tidlists = self._build_tidlists(basket_list)
 
-        # Filter by min support
         filtered = {item: tids for item, tids in tidlists.items()
                     if len(tids) / n >= self.min_support}
 
@@ -351,23 +328,18 @@ class ECLAT:
         return sorted(rules, key=lambda x: x["lift"], reverse=True)
 
 
-# ──────────────────────────────────────────────
-# INTERESTINGNESS SCORING ENGINE
-# ──────────────────────────────────────────────
-
 def compute_interestingness_score(rule: Dict) -> float:
     """
     Custom interestingness score combining multiple metrics.
     Score ∈ [0, 1] — higher is more interesting/actionable.
     """
-    # Normalize each metric
-    lift_score = min(rule["lift"] / 10, 1.0)                        # lift up to 10
-    conf_score = rule["confidence"]                                   # already 0-1
-    sup_score = min(rule["support"] / 0.2, 1.0)                     # support up to 20%
-    lev_score = min(max(rule["leverage"] * 20, 0), 1.0)             # leverage
-    conv_score = min(rule["conviction"] / 5, 1.0)                    # conviction
+ 
+    lift_score = min(rule["lift"] / 10, 1.0)                       
+    conf_score = rule["confidence"]                            
+    sup_score = min(rule["support"] / 0.2, 1.0)                  
+    lev_score = min(max(rule["leverage"] * 20, 0), 1.0)           
+    conv_score = min(rule["conviction"] / 5, 1.0)                  
 
-    # Weighted combination (lift and confidence are most actionable)
     score = (0.35 * lift_score + 0.30 * conf_score +
              0.15 * sup_score + 0.10 * lev_score + 0.10 * conv_score)
     return round(score, 4)
@@ -380,9 +352,6 @@ def rank_rules(rules: List[Dict]) -> List[Dict]:
     return sorted(rules, key=lambda x: x["interestingness"], reverse=True)
 
 
-# ──────────────────────────────────────────────
-# RECOMMENDATION ENGINE
-# ──────────────────────────────────────────────
 
 class RecommendationEngine:
     """
@@ -395,7 +364,7 @@ class RecommendationEngine:
 
     def fit(self, rules: List[Dict]) -> "RecommendationEngine":
         self.rules = rules
-        # Index rules by each antecedent product for fast lookup
+       
         for rule in rules:
             for item in rule["antecedents"]:
                 self.product_to_rules[item].append(rule)
@@ -412,7 +381,7 @@ class RecommendationEngine:
 
         for item in cart:
             for rule in self.product_to_rules.get(item, []):
-                # Check if antecedent is subset of cart
+           
                 if set(rule["antecedents"]).issubset(cart_set):
                     for rec_item in rule["consequents"]:
                         if exclude_cart and rec_item in cart_set:
@@ -422,7 +391,7 @@ class RecommendationEngine:
                         if rec_item not in candidate_info or candidate_info[rec_item]["lift"] < rule["lift"]:
                             candidate_info[rec_item] = rule
 
-        # Sort by score
+
         ranked = sorted(candidate_scores.items(), key=lambda x: x[1], reverse=True)
 
         results = []
@@ -438,7 +407,6 @@ class RecommendationEngine:
                 "explanation": self._explain(cart, item, rule)
             })
 
-        # Split into upsell (lift > 2) and cross-sell (lift 1-2)
         upsell = [r for r in results if r["lift"] >= 2.0][:n]
         cross_sell = [r for r in results if r["lift"] < 2.0][:n]
 
@@ -467,16 +435,13 @@ class RecommendationEngine:
                 f"{rec_item} ({confidence_pct}% of the time, {lift:.1f}x more likely).")
 
 
-# ──────────────────────────────────────────────
-# CUSTOMER SEGMENTATION (K-Means)
-# ──────────────────────────────────────────────
 
 def segment_customers(df: pd.DataFrame, n_clusters: int = 4) -> pd.DataFrame:
     """
     Segment customers using K-Means based on purchase behavior.
     Features: total spend, basket size, category diversity, purchase frequency.
     """
-    # Feature engineering per customer
+  
     customer_features = df.groupby("customer_id").agg(
         total_spend=("price", "sum"),
         n_transactions=("transaction_id", "nunique"),
@@ -485,12 +450,11 @@ def segment_customers(df: pd.DataFrame, n_clusters: int = 4) -> pd.DataFrame:
         avg_price=("price", "mean"),
     ).reset_index()
 
-    # Normalize
+
     features = ["total_spend", "n_transactions", "n_unique_products", "avg_price"]
     X = customer_features[features].values
     X_norm = (X - X.mean(axis=0)) / (X.std(axis=0) + 1e-9)
 
-    # Simple K-Means
     np.random.seed(42)
     centroids = X_norm[np.random.choice(len(X_norm), n_clusters, replace=False)]
 
@@ -511,23 +475,18 @@ def segment_customers(df: pd.DataFrame, n_clusters: int = 4) -> pd.DataFrame:
     return customer_features
 
 
-# ──────────────────────────────────────────────
-# SEASONALITY ANALYSIS
-# ──────────────────────────────────────────────
-
 def analyze_seasonality(df: pd.DataFrame) -> Dict:
     """Analyze monthly purchase trends per product category."""
     df["month"] = pd.to_datetime(df["date"]).dt.month
     month_product = df.groupby(["month", "product"]).size().reset_index(name="count")
 
-    # Top 10 products per month
+
     monthly_top = month_product.sort_values("count", ascending=False).groupby("month").head(5)
     monthly_trends = {}
     for month in range(1, 13):
         month_data = month_product[month_product["month"] == month]
         monthly_trends[str(month)] = month_data.sort_values("count", ascending=False).head(10).to_dict("records")
 
-    # Overall trend line per product (simplified)
     pivot = month_product.pivot_table(index="month", columns="product", values="count", fill_value=0)
     top_products = month_product.groupby("product")["count"].sum().nlargest(10).index.tolist()
 
@@ -546,13 +505,9 @@ def analyze_seasonality(df: pd.DataFrame) -> Dict:
     }
 
 
-# ──────────────────────────────────────────────
-# PRODUCT NETWORK GRAPH DATA
-# ──────────────────────────────────────────────
-
 def build_product_graph(rules: List[Dict], top_n: int = 50) -> Dict:
     """Build nodes + edges for product relationship network visualization."""
-    # Filter top rules
+
     top_rules = sorted(rules, key=lambda x: x["lift"], reverse=True)[:top_n]
 
     nodes = {}
@@ -564,7 +519,7 @@ def build_product_graph(rules: List[Dict], top_n: int = 50) -> Dict:
                 nodes[item] = {"id": item, "label": item, "connections": 0}
             nodes[item]["connections"] += 1
 
-        # One edge per antecedent-consequent pair
+       
         for ant in rule["antecedents"]:
             for con in rule["consequents"]:
                 edges.append({
@@ -580,10 +535,6 @@ def build_product_graph(rules: List[Dict], top_n: int = 50) -> Dict:
         "edges": edges
     }
 
-
-# ──────────────────────────────────────────────
-# MODEL COMPARISON
-# ──────────────────────────────────────────────
 
 def compare_models(basket_list: List[List[str]], params: Dict) -> Dict:
     """Train all three models and compare performance metrics."""
@@ -610,10 +561,6 @@ def compare_models(basket_list: List[List[str]], params: Dict) -> Dict:
     return results
 
 
-# ──────────────────────────────────────────────
-# MAIN ANALYSIS PIPELINE
-# ──────────────────────────────────────────────
-
 def run_full_analysis(filepath: str, params: Dict = None) -> Dict:
     """Run the complete Market Basket Analysis pipeline."""
     if params is None:
@@ -625,7 +572,7 @@ def run_full_analysis(filepath: str, params: Dict = None) -> Dict:
     print("Comparing models...")
     model_comparison = compare_models(basket_list, params)
 
-    # Use FP-Growth results as the primary (fastest + most complete)
+
     primary_model = FPGrowth(**params)
     primary_model.fit(basket_list)
     ranked_rules = rank_rules(primary_model.rules)
@@ -643,7 +590,6 @@ def run_full_analysis(filepath: str, params: Dict = None) -> Dict:
     print("Building product graph...")
     product_graph = build_product_graph(ranked_rules)
 
-    # Summary statistics
     summary = {
         "total_transactions": df["transaction_id"].nunique(),
         "total_customers": df["customer_id"].nunique(),
@@ -658,7 +604,7 @@ def run_full_analysis(filepath: str, params: Dict = None) -> Dict:
     return {
         "summary": summary,
         "model_comparison": model_comparison,
-        "rules": ranked_rules[:100],  # top 100 rules
+        "rules": ranked_rules[:100],
         "product_graph": product_graph,
         "seasonality": seasonality,
         "customer_segments": customer_segments[["customer_id", "total_spend", "n_transactions", "n_unique_products", "segment"]].head(200).to_dict("records"),
@@ -669,7 +615,7 @@ def run_full_analysis(filepath: str, params: Dict = None) -> Dict:
 if __name__ == "__main__":
     import os
     _here = os.path.dirname(os.path.abspath(__file__))
-    # Look for data/ next to this file OR one level up (backend/../data)
+ 
     _data1 = os.path.join(_here, "data", "transactions.csv")
     _data2 = os.path.join(_here, "..", "data", "transactions.csv")
     _csv = _data1 if os.path.exists(_data1) else os.path.abspath(_data2)
