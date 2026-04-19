@@ -1,0 +1,759 @@
+# ◈ BasketAI — Market Basket Intelligence Platform
+
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10%2B-3b82f6?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-06b6d4?style=for-the-badge&logo=fastapi&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-2.0%2B-8b5cf6?style=for-the-badge&logo=pandas&logoColor=white)
+![JupyterLab](https://img.shields.io/badge/JupyterLab-4.0%2B-f59e0b?style=for-the-badge&logo=jupyter&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)
+
+**An intelligent, end-to-end Market Basket Analysis system that discovers hidden purchase patterns and generates actionable upsell & cross-sell recommendations using three association rule mining algorithms — all from scratch.**
+
+[Features](#-features) · [Quick Start](#-quick-start) · [Architecture](#-architecture) · [Algorithms](#-algorithms) · [API Reference](#-api-reference) · [Screenshots](#-ui-overview)
+
+</div>
+
+---
+
+## 📌 Table of Contents
+
+1. [Project Overview](#-project-overview)
+2. [Features](#-features)
+3. [Project Structure](#-project-structure)
+4. [Quick Start](#-quick-start)
+5. [Running in JupyterLab](#-running-in-jupyterlab)
+6. [Architecture](#-architecture)
+7. [Algorithms Deep Dive](#-algorithms-deep-dive)
+8. [Interestingness Scoring](#-interestingness-scoring)
+9. [Recommendation Engine](#-recommendation-engine)
+10. [Customer Segmentation](#-customer-segmentation)
+11. [API Reference](#-api-reference)
+12. [UI Overview](#-ui-overview)
+13. [Dataset Format](#-dataset-format)
+14. [Configuration](#-configuration)
+15. [Troubleshooting](#-troubleshooting)
+16. [Tech Stack](#-tech-stack)
+
+---
+
+## 🎯 Project Overview
+
+**BasketAI** is a production-ready Market Basket Analysis platform built for retail intelligence. It mines transaction data to reveal which products customers frequently buy together, then uses those patterns to generate smart product recommendations.
+
+The system implements **three association rule mining algorithms from scratch** (no black-box libraries), compares their performance, and exposes everything through a self-contained FastAPI server with a fully interactive browser dashboard — no CDN, no internet required at runtime.
+
+### What Problem Does It Solve?
+
+| Business Goal | How BasketAI Helps |
+|---|---|
+| Increase average order value | Upsell suggestions with high lift scores |
+| Improve product discovery | Cross-sell recommendations based on purchase history |
+| Understand customer behavior | K-Means customer segmentation |
+| Plan promotions seasonally | Month-by-month product trend analysis |
+| Visualize product relationships | Interactive SVG product network graph |
+
+---
+
+## ✨ Features
+
+### Core Machine Learning
+- **Three algorithms implemented from scratch** — Apriori, FP-Growth, ECLAT
+- **Automatic model comparison** — side-by-side performance metrics
+- **Custom Interestingness Score** — weighted ranking beyond just lift
+- **Association metrics** — Support, Confidence, Lift, Leverage, Conviction
+- **Configurable thresholds** — min support, min confidence, max itemset length
+
+### Recommendation Engine
+- **Cart-based recommendations** — input any set of products, get ranked suggestions
+- **Upsell vs Cross-sell separation** — high-lift upsell vs complementary cross-sell
+- **AI-generated explanations** — human-readable reasoning for every recommendation
+- **Real-time simulation** — add products to a drag-and-drop cart, get instant results
+
+### Advanced Analytics
+- **Customer Segmentation** — K-Means clustering into 4 behavioral profiles
+- **Seasonality Analysis** — monthly purchase trend detection per product
+- **Product Network Graph** — force-directed SVG visualization of product relationships
+- **Interactive rules table** — filter by algorithm, sort by any metric
+
+### Production-Ready Backend
+- **FastAPI REST API** — 10+ endpoints, OpenAPI docs included
+- **Auto-training on startup** — model trains automatically when server starts
+- **CSV upload** — bring your own transaction data
+- **In-memory caching** — sub-millisecond response after training
+- **Zero-dependency UI** — self-contained HTML/CSS/JS, no CDN required
+
+---
+
+## 📁 Project Structure
+
+```
+MARKET_ANALYSIS/
+│
+├── app.py                  ← ⭐ Main entry point — run this!
+├── ml_engine.py            ← Core ML: Apriori, FP-Growth, ECLAT, Recommender
+├── requirements.txt        ← Python dependencies
+├── START.bat               ← One-click Windows launcher
+│
+├── data/
+│   ├── transactions.csv    ← Sample dataset (2,000 transactions, 59 products)
+│   └── generate_data.py    ← Dataset generator with seasonality & associations
+│
+├── notebooks/
+│   └── Market_Basket_Analysis.ipynb  ← Full Jupyter walkthrough
+│
+└── frontend/
+    └── index.html          ← Standalone React UI (alternative to built-in UI)
+```
+
+> **Note:** `app.py` already contains the full dashboard UI inline. You only need the `frontend/` folder if you want to serve the React version separately.
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.10 or higher
+- pip package manager
+- A modern web browser
+
+### Step 1 — Install Dependencies
+
+```bash
+pip install fastapi uvicorn python-multipart pandas numpy scikit-learn matplotlib
+```
+
+Or install everything at once:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Step 2 — Run the Server
+
+```bash
+cd MARKET_ANALYSIS
+python app.py
+```
+
+**Expected terminal output:**
+
+```
+Folder  : C:\Users\...\MARKET_ANALYSIS
+Dataset : C:\Users\...\MARKET_ANALYSIS\data\transactions.csv
+
+UI       -> http://localhost:8000
+API docs -> http://localhost:8000/docs
+
+Auto-training with data/transactions.csv
+Auto-training complete — 46 rules found.
+INFO:     Uvicorn running on http://0.0.0.0:8000
+```
+
+### Step 3 — Open the UI
+
+Open your browser and go to:
+
+```
+http://localhost:8000
+```
+
+The full dashboard loads instantly — no internet connection required.
+
+### Windows One-Click Launch
+
+Double-click `START.bat` — it installs dependencies, generates data, and starts the server automatically.
+
+---
+
+## 📓 Running in JupyterLab
+
+The Jupyter notebook provides a full interactive walkthrough with inline charts.
+
+```bash
+# Install JupyterLab if needed
+pip install jupyterlab
+
+# Launch
+jupyter lab notebooks/Market_Basket_Analysis.ipynb
+```
+
+Then **run cells top to bottom**. Each cell is clearly labeled:
+
+| Cell | Purpose |
+|------|---------|
+| Cell 1 | Auto-detect project paths (works from any directory) |
+| Cell 2 | Install missing packages |
+| Cell 3 | Import ML engine |
+| Cell 4 | Generate or load dataset |
+| Cell 5 | Train & compare all three algorithms |
+| Cell 6 | Display top association rules table |
+| Cell 7 | Test recommendation engine |
+| Cell 8 | Customer segmentation analysis |
+| Cell 9 | Seasonality trend table |
+| Cell 10 | Matplotlib dashboard (4 charts) |
+| Cell 11 | Start FastAPI backend server |
+| Cell 12 | Verify API & display frontend link |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Browser (localhost:8000)                  │
+│  ┌──────────┐   ┌─────────────┐   ┌──────────────────────┐  │
+│  │  Setup   │   │  Dashboard  │   │  Recommendation UI   │  │
+│  │  Page    │   │  Page       │   │  (Drag & Drop Cart)  │  │
+│  └────┬─────┘   └──────┬──────┘   └──────────┬───────────┘  │
+└───────┼────────────────┼───────────────────────┼────────────┘
+        │    Vanilla JS fetch() calls            │
+        ▼                ▼                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  FastAPI Server (app.py)                     │
+│                                                             │
+│  POST /api/train    GET /api/rules    POST /api/recommend   │
+│  GET  /api/summary  GET /api/graph   GET  /api/segments     │
+│  GET  /api/model-comparison          GET  /api/seasonality  │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    ml_engine.py                              │
+│                                                             │
+│  ┌──────────┐  ┌───────────┐  ┌─────────┐                  │
+│  │  Apriori │  │ FP-Growth │  │  ECLAT  │  ← All from scratch
+│  └──────────┘  └───────────┘  └─────────┘                  │
+│                                                             │
+│  ┌────────────────────┐  ┌─────────────────────────────┐   │
+│  │ Recommendation     │  │ Customer Segmentation       │   │
+│  │ Engine             │  │ (K-Means)                   │   │
+│  └────────────────────┘  └─────────────────────────────┘   │
+│                                                             │
+│  ┌────────────────────┐  ┌─────────────────────────────┐   │
+│  │ Seasonality        │  │ Product Graph Builder       │   │
+│  │ Analyzer           │  │                             │   │
+│  └────────────────────┘  └─────────────────────────────┘   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+                  data/transactions.csv
+```
+
+---
+
+## 🧠 Algorithms Deep Dive
+
+### 1. Apriori
+
+The classic **breadth-first** association rule mining algorithm.
+
+**How it works:**
+1. Scan the dataset and count all individual item frequencies
+2. Prune items below `min_support` (the Apriori property: any subset of a frequent itemset must also be frequent)
+3. Combine surviving items into pairs, count frequencies, prune again
+4. Repeat for triplets, and so on up to `max_len`
+5. Generate rules from all discovered frequent itemsets
+
+**Strengths:** Simple, interpretable, guaranteed to find all rules  
+**Weakness:** Slow on large datasets due to multiple database scans
+
+```python
+model = Apriori(min_support=0.01, min_confidence=0.2, max_len=3)
+model.fit(basket_list)
+print(model.rules[:5])
+```
+
+---
+
+### 2. FP-Growth (Primary Algorithm)
+
+**Frequent Pattern Growth** — uses a compressed tree structure to avoid repeated dataset scans.
+
+**How it works:**
+1. Count item frequencies and sort items by frequency
+2. Build an **FP-Tree** by inserting each transaction in frequency-sorted order
+3. For each item, extract its **conditional pattern base** (all paths through the tree leading to that item)
+4. Recursively mine each conditional pattern base
+
+**Strengths:** Typically 2–10× faster than Apriori, no candidate generation step  
+**Best for:** Large datasets, production use
+
+```python
+model = FPGrowth(min_support=0.01, min_confidence=0.2, max_len=3)
+model.fit(basket_list)
+```
+
+---
+
+### 3. ECLAT
+
+**Equivalence Class Transformation** — uses a vertical data representation.
+
+**How it works:**
+1. Instead of storing transactions horizontally (transaction → items), store **vertically** — for each item, maintain the set of transaction IDs (TID-list) where it appears
+2. Calculate support by intersecting TID-lists: `support(A∪B) = |TID(A) ∩ TID(B)| / N`
+3. Recursively combine items using set intersection
+
+**Strengths:** Very fast set intersection operations, excellent for dense datasets  
+**Unique value:** Completely different data structure from Apriori/FP-Growth
+
+```python
+model = ECLAT(min_support=0.01, min_confidence=0.2, max_len=3)
+model.fit(basket_list)
+```
+
+---
+
+### Algorithm Comparison (Sample Results)
+
+| Metric | Apriori | FP-Growth | ECLAT |
+|--------|---------|-----------|-------|
+| Frequent Itemsets | 28 | 28 | 28 |
+| Rules Generated | 46 | 46 | 46 |
+| Training Time | ~0.8s | ~0.3s | ~0.5s |
+| Avg Lift | 2.41 | 2.41 | 2.41 |
+| Max Lift | 3.79 | 3.79 | 3.79 |
+
+> All three algorithms produce identical results — the difference is speed and memory usage.
+
+---
+
+## 📊 Interestingness Scoring
+
+Standard metrics (lift alone) can miss nuanced patterns. BasketAI uses a **custom composite score**:
+
+```
+Score = 0.35 × lift_norm
+      + 0.30 × confidence
+      + 0.15 × support_norm
+      + 0.10 × leverage_norm
+      + 0.10 × conviction_norm
+```
+
+Where each metric is normalized to `[0, 1]` before weighting.
+
+**Why each metric matters:**
+
+| Metric | What it measures | Weight |
+|--------|-----------------|--------|
+| **Lift** | How much more likely B is given A (vs random) | 35% |
+| **Confidence** | P(B \| A) — how reliable is the rule | 30% |
+| **Support** | How often A and B appear together | 15% |
+| **Leverage** | Difference from statistical independence | 10% |
+| **Conviction** | How often the rule would be wrong if B were independent | 10% |
+
+Rules are ranked by this score in the dashboard. A score of `1.0` is perfect — a score above `0.4` is considered highly actionable.
+
+---
+
+## 🔮 Recommendation Engine
+
+The engine maps every rule's antecedents to fast-lookup indices, then:
+
+1. For each item in the cart, find all rules where the antecedent is a **subset of the cart**
+2. Score each candidate consequent by the highest matching rule's interestingness score
+3. Split results into:
+   - **Upsell** — recommendations with `lift ≥ 2.0` (strongly associated, high value)
+   - **Cross-sell** — recommendations with `lift < 2.0` (complementary products)
+4. Generate a plain-English explanation for each recommendation
+
+**Example:**
+
+```
+Cart: [Laptop, Mouse]
+
+Upsell:
+  • Keyboard     lift=3.79, conf=48%
+    "Customers who buy Laptop tend to also purchase Keyboard
+     (48% of the time, 3.8× more likely)"
+
+  • Laptop Stand lift=3.57, conf=44%
+  • USB Hub      lift=3.42, conf=41%
+
+Cross-sell:
+  • Herbal Tea   lift=1.41, conf=22%
+```
+
+---
+
+## 👥 Customer Segmentation
+
+BasketAI applies **K-Means clustering** (k=4) using these behavioral features:
+
+| Feature | Description |
+|---------|-------------|
+| Total Spend | Cumulative purchase value |
+| N Transactions | How often they buy |
+| N Unique Products | Breadth of product interest |
+| Avg Item Price | Price sensitivity |
+
+**Resulting Segments:**
+
+| Segment | Profile |
+|---------|---------|
+| 🏆 Premium Customers | High spend, frequent buyers, broad product range |
+| 🔄 Frequent Buyers | Regular purchasers, moderate spend |
+| 💰 Budget Shoppers | Low spend per transaction, price-sensitive |
+| 🌙 Occasional Buyers | Infrequent purchases, low engagement |
+
+---
+
+## 🔌 API Reference
+
+All endpoints are also documented interactively at **http://localhost:8000/docs**
+
+### GET `/`
+Returns the full dashboard UI as HTML.
+
+---
+
+### GET `/api/status`
+Returns server and training status.
+
+```json
+{
+  "training_status": "ready",
+  "training_progress": 100,
+  "last_trained": "2024-01-15 14:32:10",
+  "has_results": true
+}
+```
+
+---
+
+### POST `/api/upload`
+Upload a custom CSV dataset.
+
+**Form data:** `file` (CSV file)
+
+**Response:**
+```json
+{
+  "message": "Uploaded",
+  "filename": "my_data.csv",
+  "rows": 5000,
+  "columns": ["transaction_id", "product", "date", "customer_id"]
+}
+```
+
+---
+
+### POST `/api/train`
+Train all three algorithms with custom parameters.
+
+**Request body:**
+```json
+{
+  "min_support": 0.01,
+  "min_confidence": 0.20,
+  "max_len": 3
+}
+```
+
+**Response:**
+```json
+{
+  "status": "ready",
+  "n_rules": 46,
+  "training_time": {
+    "Apriori": 0.82,
+    "FP-Growth": 0.31,
+    "ECLAT": 0.47
+  }
+}
+```
+
+---
+
+### GET `/api/rules`
+Retrieve association rules with optional filtering.
+
+**Query params:**
+- `limit` (int, default 50) — max rules to return
+- `algorithm` (str, optional) — filter by `Apriori`, `FP-Growth`, or `ECLAT`
+- `min_lift` (float, default 1.0) — minimum lift threshold
+
+**Response:**
+```json
+{
+  "rules": [
+    {
+      "antecedents": ["Laptop"],
+      "consequents": ["Keyboard"],
+      "support": 0.038,
+      "confidence": 0.48,
+      "lift": 3.79,
+      "leverage": 0.028,
+      "conviction": 1.75,
+      "interestingness": 0.42,
+      "algorithm": "FP-Growth"
+    }
+  ],
+  "total": 46
+}
+```
+
+---
+
+### POST `/api/recommend`
+Get upsell and cross-sell recommendations for a cart.
+
+**Request body:**
+```json
+{
+  "cart": ["Laptop", "Mouse"],
+  "n_recommendations": 5
+}
+```
+
+**Response:**
+```json
+{
+  "cart": ["Laptop", "Mouse"],
+  "upsell": [
+    {
+      "product": "Keyboard",
+      "score": 0.42,
+      "confidence": 0.48,
+      "lift": 3.79,
+      "support": 0.038,
+      "trigger": ["Laptop"],
+      "explanation": "Customers who buy Laptop strongly tend to also purchase Keyboard (48% of the time, 3.8x more likely)."
+    }
+  ],
+  "cross_sell": [...],
+  "all_recommendations": [...]
+}
+```
+
+---
+
+### GET `/api/graph`
+Product relationship network data for visualization.
+
+**Query params:** `top_n` (int, default 50)
+
+**Response:**
+```json
+{
+  "nodes": [{"id": "Laptop", "label": "Laptop", "connections": 5}],
+  "edges": [{"source": "Laptop", "target": "Mouse", "weight": 3.79, "confidence": 0.48}]
+}
+```
+
+---
+
+### GET `/api/seasonality`
+Monthly product trend data.
+
+### GET `/api/segments`
+Customer segmentation results and summary.
+
+### GET `/api/model-comparison`
+Side-by-side comparison of all three algorithms.
+
+### GET `/api/products`
+List of all products available for recommendations.
+
+---
+
+## 🖥️ UI Overview
+
+### Page 1 — Setup
+
+- Upload your own CSV dataset via drag & drop
+- Configure training parameters with interactive sliders:
+  - **Min Support** — how common a pattern must be (0.005 → 0.1)
+  - **Min Confidence** — how reliable a rule must be (0.1 → 0.9)
+  - **Max Itemset Length** — maximum products per rule (2 → 5)
+- Click **Train All Models** — all three algorithms run simultaneously
+
+### Page 2 — Dashboard
+
+- **Stats strip** — transactions, customers, products, rules, avg basket size
+- **Algorithm comparison** — bar chart + metric table for Apriori vs FP-Growth vs ECLAT
+- **Monthly trends chart** — top 3 products plotted across 12 months
+- **Customer segments** — horizontal bar chart of 4 behavioral clusters
+- **Association rules table** — filterable by algorithm, shows lift, confidence, support, interestingness score
+
+### Page 3 — Recommendation Engine
+
+- **Product catalog** — searchable grid of all 59 products, click or drag to add
+- **Shopping cart** — drag-and-drop zone, recommendations update in real-time
+- **Upsell panel** — high-lift products with AI explanations
+- **Cross-sell panel** — complementary products with metrics
+- **Product network graph** — force-directed SVG showing all product relationships
+
+---
+
+## 📋 Dataset Format
+
+Your CSV must contain at minimum:
+
+| Column | Type | Description | Example |
+|--------|------|-------------|---------|
+| `transaction_id` | string | Unique ID per basket | `TXN_00001` |
+| `product` | string | Product name | `Laptop` |
+| `date` | string | Purchase date | `2023-06-15` |
+
+Optional columns (enhance segmentation and seasonality):
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `customer_id` | string | Links purchases to a customer |
+| `quantity` | int | Units purchased |
+| `price` | float | Item price |
+| `customer_segment` | string | Known segment label |
+
+**Example rows:**
+
+```csv
+transaction_id,customer_id,product,date,quantity,price
+TXN_00001,CUST_0042,Laptop,2023-06-15,1,899.99
+TXN_00001,CUST_0042,Mouse,2023-06-15,1,29.99
+TXN_00001,CUST_0042,USB Hub,2023-06-15,1,49.99
+TXN_00002,CUST_0107,Yoga Mat,2023-06-15,1,79.99
+TXN_00002,CUST_0107,Foam Roller,2023-06-15,1,34.99
+```
+
+> One row per product per transaction. The system groups by `transaction_id` automatically.
+
+---
+
+## ⚙️ Configuration
+
+Tuning parameters explained:
+
+| Parameter | Default | Effect |
+|-----------|---------|--------|
+| `min_support` | `0.01` | Lower = more rules, slower training. Try `0.005` for dense data |
+| `min_confidence` | `0.20` | Higher = more reliable but fewer rules |
+| `max_len` | `3` | Max items per rule. `3` covers most patterns without explosion |
+
+**Rule of thumb for min_support:**
+- Small dataset (< 500 transactions): `0.05`
+- Medium dataset (500–5,000 transactions): `0.01–0.02`
+- Large dataset (> 5,000 transactions): `0.005–0.01`
+
+---
+
+## 🛠️ Troubleshooting
+
+### Black screen at localhost:8000
+This version uses **zero CDN dependencies**. If you see a black screen, hard-refresh the page with `Ctrl+Shift+R`.
+
+### `ModuleNotFoundError: No module named 'ml_engine'`
+Make sure you run from the folder containing `app.py`:
+```bash
+cd MARKET_ANALYSIS   # ← this folder must contain app.py AND ml_engine.py
+python app.py
+```
+
+### `FileNotFoundError: transactions.csv`
+The file is auto-generated on first run. If it's missing:
+```bash
+python data/generate_data.py
+```
+
+### Port 8000 already in use
+```bash
+# Windows
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+
+# Mac/Linux
+kill $(lsof -ti:8000)
+```
+
+### `No rules found` after training
+Lower the thresholds:
+```json
+{ "min_support": 0.005, "min_confidence": 0.15, "max_len": 3 }
+```
+
+### Notebook: `os.chdir('backend')` error
+Use the latest notebook — Cell 1 auto-detects paths. Do **not** run `os.chdir()` manually.
+
+---
+
+## 🔧 Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **ML Algorithms** | Pure Python + NumPy | Apriori, FP-Growth, ECLAT — no ML library |
+| **Data Processing** | Pandas | Transaction loading, aggregation, feature engineering |
+| **Clustering** | NumPy (K-Means from scratch) | Customer segmentation |
+| **Backend API** | FastAPI + Uvicorn | REST endpoints, auto-training, caching |
+| **Frontend UI** | Vanilla HTML + CSS + JS | Self-contained, zero CDN dependencies |
+| **Visualization** | SVG (graph) + CSS bars | Product network, trend charts |
+| **Notebook** | JupyterLab + Matplotlib | Interactive walkthrough + inline charts |
+| **Data Format** | CSV | Standard transaction log format |
+
+---
+
+## 📂 Key Files Reference
+
+| File | Lines | Description |
+|------|-------|-------------|
+| `app.py` | ~500 | FastAPI server + complete self-contained UI |
+| `ml_engine.py` | ~700 | All ML: 3 algorithms + recommender + segmentation + seasonality |
+| `data/transactions.csv` | 9,892 rows | Sample dataset: 2,000 baskets, 59 products, 12 months |
+| `data/generate_data.py` | ~80 | Synthetic dataset generator with realistic associations |
+| `notebooks/Market_Basket_Analysis.ipynb` | 12 cells | Full Jupyter walkthrough |
+| `requirements.txt` | 18 deps | All Python package requirements |
+| `START.bat` | 30 lines | Windows one-click launcher |
+
+---
+
+## 🧪 Sample Results
+
+Running on the built-in demo dataset (`min_support=0.01`, `min_confidence=0.20`):
+
+**Top Association Rules by Lift:**
+
+| Rule | Support | Confidence | Lift |
+|------|---------|------------|------|
+| Laptop → Keyboard | 3.8% | 48% | **3.79** |
+| Yoga Mat → Foam Roller | 3.6% | 44% | **3.57** |
+| Resistance Band → Protein Shake | 3.8% | 51% | **3.54** |
+| Headphones → USB Hub | 3.2% | 42% | **3.42** |
+| Vitamins → Omega-3 | 2.9% | 39% | **3.18** |
+
+**Recommendation Example:**
+```
+Cart: [Yoga Mat, Water Bottle]
+
+⬆️  Upsell:   Foam Roller   (lift=3.57) — "strongly associated"
+               Resistance Band (lift=2.91) — "frequently co-purchased"
+
+↔️  Cross-sell: Protein Shake (lift=1.82) — "complementary"
+                Herbal Tea    (lift=1.41) — "commonly purchased together"
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — free to use, modify, and distribute for any purpose.
+
+---
+
+## 👨‍💻 Author
+
+Built as a complete end-to-end Data Science + Full-Stack project demonstrating:
+- Custom algorithm implementation (no black-box ML libraries for core logic)
+- RESTful API design with FastAPI
+- Self-contained browser UI without build tools
+- Production-ready project structure and documentation
+
+---
+
+<div align="center">
+
+**⭐ If this project helped you, consider giving it a star!**
+
+`BasketAI` · Market Basket Intelligence · Apriori + FP-Growth + ECLAT
+
+</div>
