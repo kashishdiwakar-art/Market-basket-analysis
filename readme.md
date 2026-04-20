@@ -701,6 +701,21 @@ Running on the built-in demo dataset (`min_support=0.01`, `min_confidence=0.20`)
 | Headphones → USB Hub | 3.2% | 42% | **3.42** |
 | Vitamins → Omega-3 | 2.9% | 39% | **3.18** |
 
+
+##  Screenshots and demo video
+<img width="1880" height="905" alt="Screenshot 2026-04-20 112841" src="https://github.com/user-attachments/assets/820b6808-f9b7-456c-a5f3-f422ba0a6406" />
+<img width="1886" height="902" alt="Screenshot 2026-04-20 112754" src="https://github.com/user-attachments/assets/c811292a-1797-459b-8b2a-4da85afc60ed" />
+<img width="1889" height="908" alt="Screenshot 2026-04-20 112711" src="https://github.com/user-attachments/assets/2c1fe3bb-a75a-4f5c-bd87-bf3c7b068ede" />
+<img width="1862" height="903" alt="Screenshot 2026-04-20 112649" src="https://github.com/user-attachments/assets/54bd8fc2-578a-4da2-9c9e-c1de279ea6f2" />
+
+
+
+https://github.com/user-attachments/assets/5bf7f40a-de5d-49c9-b917-e69ef057683b
+
+
+
+
+
 **Recommendation Example:**
 ```
 Cart: [Yoga Mat, Water Bottle]
