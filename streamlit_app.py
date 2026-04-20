@@ -1,22 +1,10 @@
-"""
-BasketAI — Market Basket Analysis
-Streamlit Deployment Entry Point
-==================================
-Deploys on Streamlit Cloud using:
-  - ml_engine.py  (same repo, same folder)
-  - data/transactions.csv  (auto-generated if missing)
-  - requirements.txt
-
-On Streamlit Cloud → set Main file path to: app.py
-"""
-
 import os
 import sys
 import time
 import random
 import io
 import matplotlib
-matplotlib.use("Agg")                   # must be BEFORE pyplot import
+matplotlib.use("Agg")                  
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -26,7 +14,7 @@ from itertools import combinations
 from collections import defaultdict
 from typing import List, Dict, Tuple, Optional
 
-# ── Page config (must be the very first Streamlit call) ──────
+
 st.set_page_config(
     page_title="BasketAI — Market Basket Intelligence",
     page_icon="🛒",
@@ -34,12 +22,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Add repo root to path so ml_engine.py can be found ──────
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 
-# ── Try importing ml_engine; if it fails, embed ML inline ──
+
 try:
     from ml_engine import (
         Apriori, FPGrowth, ECLAT,
@@ -49,7 +37,7 @@ try:
     )
     ML_SOURCE = "ml_engine"
 except ImportError:
-    # ── FALLBACK: full inline ML engine ─────────────────────
+   
     ML_SOURCE = "inline"
 
     class FPNode:
@@ -298,10 +286,6 @@ except ImportError:
                         "confidence":rule["confidence"],"support":rule["support"]})
         return {"nodes":list(nodes.values()),"edges":edges}
 
-
-# ═══════════════════════════════════════════════════════════════
-# CUSTOM CSS — dark futuristic theme
-# ═══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
@@ -346,9 +330,6 @@ p, li, label { color:#e2e8f0 !important; }
 """, unsafe_allow_html=True)
 
 
-# ═══════════════════════════════════════════════════════════════
-# SAMPLE DATA GENERATOR
-# ═══════════════════════════════════════════════════════════════
 def generate_sample_data() -> pd.DataFrame:
     random.seed(42); np.random.seed(42)
     PRODUCTS = {
@@ -388,9 +369,6 @@ def generate_sample_data() -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-# ═══════════════════════════════════════════════════════════════
-# SESSION STATE
-# ═══════════════════════════════════════════════════════════════
 _defaults = {
     "df":None,"basket_list":None,"rules":[],"rec_engine":None,
     "comparison":None,"segments":None,"seasonality":None,"trained":False,"cart":[],
@@ -400,9 +378,6 @@ for k,v in _defaults.items():
         st.session_state[k] = v
 
 
-# ═══════════════════════════════════════════════════════════════
-# SIDEBAR
-# ═══════════════════════════════════════════════════════════════
 with st.sidebar:
     st.markdown("# ◈ BasketAI")
     st.markdown("**Market Basket Intelligence**")
@@ -468,10 +443,6 @@ with st.sidebar:
         st.markdown("**Status:** 🟢 Model Ready")
         st.markdown(f"**Rules:** {len(st.session_state['rules'])}")
 
-
-# ═══════════════════════════════════════════════════════════════
-# MAIN — TABS
-# ═══════════════════════════════════════════════════════════════
 st.markdown("# ◈ BasketAI — Market Basket Intelligence")
 st.markdown("*Apriori · FP-Growth · ECLAT · Recommendation Engine · Customer Segmentation*")
 st.divider()
@@ -480,7 +451,6 @@ tab1, tab2, tab3, tab4 = st.tabs(
     ["📊 Dashboard", "🔗 Association Rules", "🔮 Recommendations", "👥 Segments & Trends"]
 )
 
-# ── TAB 1 — DASHBOARD ───────────────────────────────────────
 with tab1:
     if st.session_state["df"] is None:
         st.info("👈 Load a dataset and click **Train All Models** in the sidebar to begin.")
@@ -506,7 +476,7 @@ with tab1:
         if st.session_state["trained"]:
             cmp = st.session_state["comparison"]
 
-            # Algorithm comparison metrics
+            
             st.markdown("### 🤖 Algorithm Performance")
             cols = st.columns(3)
             clr  = {"Apriori":"🔵","FP-Growth":"🩵","ECLAT":"🟣"}
@@ -519,7 +489,7 @@ with tab1:
                     st.metric("Avg Lift",    data["avg_lift"])
                     st.metric("Max Lift",    data["max_lift"])
 
-            # Bar chart
+           
             st.markdown("#### Comparison Chart")
             algos = list(cmp.keys())
             clrs  = ["#3b82f6","#06b6d4","#8b5cf6"]
@@ -543,7 +513,7 @@ with tab1:
             st.pyplot(fig); plt.close()
             st.divider()
 
-            # Top products bar
+            
             st.markdown("### 📦 Top 10 Products by Frequency")
             tp = df["product"].value_counts().head(10)
             fig2, ax2 = plt.subplots(figsize=(10,4))
@@ -561,7 +531,6 @@ with tab1:
             st.dataframe(df.head(20), use_container_width=True)
 
 
-# ── TAB 2 — RULES ───────────────────────────────────────────
 with tab2:
     if not st.session_state["trained"]:
         st.info("👈 Train a model first.")
@@ -569,7 +538,7 @@ with tab2:
         rules = st.session_state["rules"]
         st.markdown(f"### 🔗 Association Rules  —  **{len(rules)}** found")
 
-        # Filters
+      
         f1,f2,f3,f4 = st.columns(4)
         algo_filter = f1.selectbox("Algorithm", ["All","Apriori","FP-Growth","ECLAT"])
         min_lift_f  = f2.slider("Min Lift",  1.0, 10.0, 1.0, 0.1)
@@ -595,7 +564,6 @@ with tab2:
             } for r in filtered[:n_show]])
             st.dataframe(df_rules, use_container_width=True, height=500)
 
-            # Lift histogram
             st.markdown("#### Lift Distribution")
             lifts = [r["lift"] for r in filtered]
             fig3,ax3 = plt.subplots(figsize=(10,3))
@@ -609,7 +577,6 @@ with tab2:
             ax3.spines["bottom"].set_color("#1e293b"); ax3.spines["left"].set_color("#1e293b")
             plt.tight_layout(); st.pyplot(fig3); plt.close()
 
-            # Download
             st.divider()
             st.download_button("⬇️ Download Rules CSV",
                 pd.DataFrame([{**r,"antecedents":" + ".join(r["antecedents"]),
@@ -619,7 +586,6 @@ with tab2:
             st.warning("No rules match the current filters. Try lowering the thresholds.")
 
 
-# ── TAB 3 — RECOMMENDATIONS ─────────────────────────────────
 with tab3:
     if not st.session_state["trained"]:
         st.info("👈 Train a model first.")
@@ -709,12 +675,11 @@ with tab3:
             st.info("Click **Train All Models** first to enable recommendations.")
 
 
-# ── TAB 4 — SEGMENTS & TRENDS ────────────────────────────────
 with tab4:
     if not st.session_state["trained"]:
         st.info("👈 Train a model first.")
     else:
-        # Customer Segments
+     
         seg_df = st.session_state["segments"]
         if seg_df is not None:
             st.markdown("### 👥 Customer Segmentation")
@@ -754,7 +719,7 @@ with tab4:
 
         st.divider()
 
-        # Seasonality
+       
         season = st.session_state["seasonality"]
         if season:
             st.markdown("### 📅 Monthly Product Trends")
@@ -783,7 +748,6 @@ with tab4:
                 cols_to_show = [month_col] + [p for p in top_prods if p in trend_df.columns]
                 st.dataframe(trend_df[cols_to_show], use_container_width=True, hide_index=True)
 
-            # Monthly top products
             st.markdown("#### 🗓️ Top Products by Month")
             df_main = st.session_state["df"].copy()
             df_main["month"] = pd.to_datetime(df_main["date"]).dt.month
